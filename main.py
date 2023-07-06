@@ -5,6 +5,8 @@ from matplotlib import pyplot as plt
 
 
 TYPE_SUBSTITUTION_PRICE = 1e+4
+NEW_SPLICE_SITE_PRICE = 1000
+
 
 directory = "Alignment_structure"
 data = []
@@ -60,14 +62,14 @@ def graph_from_splice_sites(structures, length):
     return graph
 
 
-def edge_substitution_price(first_node, second_node):
+def node_substitution_price(first_node, second_node):
     if first_node["type"] == second_node["type"]:
         return (first_node["coordinate"] - second_node["coordinate"]) ** 2
     else:
         return TYPE_SUBSTITUTION_PRICE
 
 
-def edge_mathing(first_node, second_node):
+def node_mathing(first_node, second_node):
     if first_node["type"] == second_node["type"] and first_node["coordinate"] == second_node["coordinate"]:
         return True
     return False
@@ -98,5 +100,6 @@ for filename in os.listdir(directory):
             nx.draw_networkx(bra_graph)
             plt.show()
             print(nx.graph_edit_distance(at_graph, bra_graph,
-                                         node_match=edge_mathing,
-                                         node_subst_cost=edge_substitution_price))
+                                         node_match=node_mathing,
+                                         node_subst_cost=node_substitution_price,
+                                         node_ins_cost=NEW_SPLICE_SITE_PRICE))
