@@ -5,7 +5,8 @@ from matplotlib import pyplot as plt
 
 
 TYPE_SUBSTITUTION_PRICE = 1e+4
-NEW_SPLICE_SITE_PRICE = 1000
+NEW_SPLICE_SITE_PRICE = 1e+3
+NEW_SPLICING_VARIANT_PRICE = 1e+4
 
 
 directory = "Alignment_structure"
@@ -102,4 +103,5 @@ for filename in os.listdir(directory):
             print(nx.graph_edit_distance(at_graph, bra_graph,
                                          node_match=node_mathing,
                                          node_subst_cost=node_substitution_price,
-                                         node_ins_cost=NEW_SPLICE_SITE_PRICE))
+                                         node_ins_cost=lambda _: NEW_SPLICE_SITE_PRICE,
+                                         edge_ins_cost=lambda _: NEW_SPLICING_VARIANT_PRICE))
