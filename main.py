@@ -71,7 +71,19 @@ def node_substitution_price(first_node, second_node):
         return TYPE_SUBSTITUTION_PRICE
 
 
-def node_mathing(first_node, second_node):
+def edge_substitution_price(first_edge, second_edge):
+    if first_edge["type"] == second_edge["type"]:
+        return 0
+    return INTRON_TO_EXON_PRICE
+
+
+def edge_match(first_edge, second_edge):
+    if first_edge["type"] == second_edge["type"]:
+        return True
+    return False
+
+
+def node_math(first_node, second_node):
     if first_node["type"] == second_node["type"] and first_node["coordinate"] == second_node["coordinate"]:
         return True
     return False
@@ -102,9 +114,11 @@ for filename in os.listdir(directory):
             nx.draw_networkx(bra_graph)
             plt.show()
             print(nx.graph_edit_distance(at_graph, bra_graph,
-                                         node_match=node_mathing,
                                          node_subst_cost=node_substitution_price,
                                          node_ins_cost=lambda _: NEW_SPLICE_SITE_PRICE,
                                          node_del_cost=lambda _: NEW_SPLICE_SITE_PRICE,
+                                         edge_subst_cost=edge_substitution_price,
                                          edge_ins_cost=lambda _: NEW_SPLICING_VARIANT_PRICE,
-                                         edge_del_cost=lambda _: NEW_SPLICING_VARIANT_PRICE,))
+                                         edge_del_cost=lambda _: NEW_SPLICING_VARIANT_PRICE,
+                                         roots=(0, 0),
+                                         timeout=10))
