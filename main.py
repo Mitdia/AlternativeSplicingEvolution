@@ -1,9 +1,13 @@
 import os
 import networkx as nx
+import math
 from matplotlib import pyplot as plt
 from data_parser import parse_file
 from price_functions import node_substitution_price, edge_substitution_price
 from price_functions import NEW_SPLICING_VARIANT_PRICE, NEW_SPLICE_SITE_PRICE
+
+
+directory = "Alignment_structure"
 
 
 def graph_from_splice_sites(structures, length):
@@ -46,9 +50,40 @@ def graph_from_splice_sites(structures, length):
     return graph
 
 
-directory = "Alignment_structure"
+def distance_between_closest_splice_sites(first_gene_structures, second_gene_structures):
+    first_gene_donor_sites = set()
+    first_gene_acceptor_sites = set()
+    second_gene_donor_sites = set()
+    second_gene_acceptor_sites = set()
+    for donors, acceptors in first_gene_structures:
+        first_gene_acceptor_sites |= set(acceptors)
+        first_gene_donor_sites |= set(donors)
+    for donors, acceptors in second_gene_structures:
+        second_gene_acceptor_sites |= set(acceptors)
+        second_gene_donor_sites |= set(donors)
+    donor_distances = []
+    for first_gene_donor_site in first_gene_donor_sites:
+        min_distance = math.inf
+        for second_gene_donor_site in second_gene_donor_sites:
+            distance = abs(second_gene_donor_site - first_gene_donor_site)
+            if distance < min_distance:
+                min_distance = distance
+        donor_distances.append(min_distance)
+
+    acceptor_distances = []
+    for first_gene_acceptor_site in first_gene_acceptor_sites:
+        min_distance = math.inf
+        for second_gene_acceptor_site in second_gene_acceptor_sites:
+            distance = abs(second_gene_acceptor_site - first_gene_acceptor_site)
+            if distance < min_distance:
+                min_distance = distance
+        acceptor_distances.append(min_distance)
+
+    return donor_distances, acceptor_distances
 
 
+closest_donor_distances = []
+closest_acceptor_distances = []
 for filename in os.listdir(directory):
     filepath = os.path.join(directory, filename)
     if os.path.isfile(filepath):
@@ -56,6 +91,9 @@ for filename in os.listdir(directory):
         length = len(list(at_structures.keys())[0])
         at_graph = graph_from_splice_sites(at_structures.values(), length)
         bra_graph = graph_from_splice_sites(bra_structures.values(), length)
+        donor_distances, acceptor_distances = distance_between_closest_splice_sites(at_structures.values(), bra_structures.values())
+        closest_acceptor_distances += acceptor_distances
+        closest_donor_distances += donor_distances
         nx.draw_networkx(at_graph)
         plt.show()
         nx.draw_networkx(bra_graph)
