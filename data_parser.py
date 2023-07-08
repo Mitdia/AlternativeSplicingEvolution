@@ -1,5 +1,4 @@
 import re
-from networkx import DiGraph
 
 
 def structure_to_coordinate_list(structure):
@@ -12,42 +11,25 @@ def structure_to_coordinate_list(structure):
     return donors, acceptors
 
 
-def graph_from_splice_sites(structures, length):
-    graph = DiGraph()
-    seen_sites = {}
-    node_index = 1
-    graph.add_node(0, coordinate=-1, type="root")
-    graph.add_node(-1, coordinate=length + 1, type="end")
-    for donors, acceptors in structures:
+def parse_file(filepath):
+    with open(filepath, 'r') as file:
 
-        if acceptors[0] not in seen_sites:
-            graph.add_node(node_index, coordinate=acceptors[0], type="acceptor")
-            seen_sites[acceptors[0]] = node_index
-            node_index += 1
-        graph.add_edge(0, seen_sites[acceptors[0]], type="intron")
+        file_contents = file.read()
+        file_contents = file_contents.split()
+        length = len(file_contents[1])
+        at_structures = {}
+        i = 2
 
-        if donors[-1] not in seen_sites:
-            graph.add_node(node_index, coordinate=donors[-1], type="donor")
-            seen_sites[donors[-1]] = node_index
-            node_index += 1
-        graph.add_edge(seen_sites[donors[-1]], -1, type="intron")
+        while file_contents[i].startswith(">AT"):
+            structure = file_contents[i + 1]
+            at_structures[structure] = (structure_to_coordinate_list(structure))
+            i += 2
 
-        for i in range(1, len(donors)):
+        i += 2
+        bra_structures = {}
+        while i < len(file_contents):
+            structure = file_contents[i + 1]
+            bra_structures[structure] = (structure_to_coordinate_list(structure))
+            i += 2
 
-            if donors[i - 1] not in seen_sites:
-                graph.add_node(node_index, coordinate=donors[i - 1], type="donor")
-                seen_sites[donors[i - 1]] = node_index
-                node_index += 1
-
-            if acceptors[i] not in seen_sites:
-                graph.add_node(node_index, coordinate=acceptors[i], type="acceptor")
-                seen_sites[acceptors[i]] = node_index
-                node_index += 1
-
-            graph.add_edge(seen_sites[acceptors[i - 1]], seen_sites[donors[i - 1]], type="exon")
-            graph.add_edge(seen_sites[donors[i - 1]], seen_sites[acceptors[i]], type="intron")
-
-        graph.add_edge(seen_sites[acceptors[-1]], seen_sites[donors[-1]], type="exon")
-
-    return graph
-
+        return at_structures, bra_structures
