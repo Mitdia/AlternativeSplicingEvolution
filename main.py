@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from data_parser import parse_file
 from statistics import distance_between_closest_splice_sites, percentage_of_coinciding_splice_sites, visualize
 from price_functions import node_substitution_price, edge_substitution_price
-from price_functions import NEW_SPLICING_VARIANT_PRICE, NEW_SPLICE_SITE_PRICE
+from price_functions import NEW_SPLICING_VARIANT_PRICE, NEW_SPLICE_SITE_PRICE, SUBST_PRICES
 
 
 directory = "Alignment_structure"
@@ -50,6 +50,23 @@ def graph_from_splice_sites(structures, length):
     return graph
 
 
+def string_edit_distance_between_isoforms(first_string, second_string):
+    price = 0
+    for first_isoform_symbol, second_isoform_symbol in zip(first_string, second_string):
+        price += SUBST_PRICES[first_isoform_symbol][second_isoform_symbol]
+    return price
+
+
+def average_string_edit_distance(first_structures, second_structures):
+    cumulative_price = 0
+    number_of_pairs = 0
+    for first_structure in first_structures:
+        for second_structure in second_structures:
+            cumulative_price += string_edit_distance_between_isoforms(first_structure, second_structure)
+            number_of_pairs += 1
+    return cumulative_price / number_of_pairs
+
+
 closest_donor_distances = []
 closest_acceptor_distances = []
 coinciding_donors = []
@@ -82,6 +99,7 @@ for filename in os.listdir(directory):
                                      edge_del_cost=lambda _: NEW_SPLICING_VARIANT_PRICE,
                                      roots=(0, 0),
                                      timeout=10))
+        print(average_string_edit_distance(at_structures.keys(), bra_structures.keys()))
 
 visualize(closest_donor_distances, closest_acceptor_distances,
           coinciding_donors, coinciding_acceptors, coinciding_splice_sites)
