@@ -57,12 +57,12 @@ def string_edit_distance_between_isoforms(first_string, second_string):
     return price
 
 
-def average_string_edit_distance(first_structures, second_structures):
+def average_distance(first_structures, second_structures, distance_function):
     cumulative_price = 0
     number_of_pairs = 0
     for first_structure in first_structures:
         for second_structure in second_structures:
-            cumulative_price += string_edit_distance_between_isoforms(first_structure, second_structure)
+            cumulative_price += distance_function(first_structure, second_structure)
             number_of_pairs += 1
     return cumulative_price / number_of_pairs
 
@@ -86,20 +86,20 @@ for filename in os.listdir(directory):
         coinciding_donors += donors
         coinciding_acceptors += acceptors
         coinciding_splice_sites += splice_sites
-        nx.draw_networkx(at_graph)
-        plt.show()
-        nx.draw_networkx(bra_graph)
-        plt.show()
-        print(nx.graph_edit_distance(at_graph, bra_graph,
-                                     node_subst_cost=node_substitution_price,
-                                     node_ins_cost=lambda _: NEW_SPLICE_SITE_PRICE,
-                                     node_del_cost=lambda _: NEW_SPLICE_SITE_PRICE,
-                                     edge_subst_cost=edge_substitution_price,
-                                     edge_ins_cost=lambda _: NEW_SPLICING_VARIANT_PRICE,
-                                     edge_del_cost=lambda _: NEW_SPLICING_VARIANT_PRICE,
-                                     roots=(0, 0),
-                                     timeout=10))
-        print(average_string_edit_distance(at_structures.keys(), bra_structures.keys()))
-
-visualize(closest_donor_distances, closest_acceptor_distances,
-          coinciding_donors, coinciding_acceptors, coinciding_splice_sites)
+        # nx.draw_networkx(at_graph)
+        # plt.show()
+        # nx.draw_networkx(bra_graph)
+        # plt.show()
+        # print(nx.graph_edit_distance(at_graph, bra_graph,
+        #                              node_subst_cost=node_substitution_price,
+        #                              node_ins_cost=lambda _: NEW_SPLICE_SITE_PRICE,
+        #                              node_del_cost=lambda _: NEW_SPLICE_SITE_PRICE,
+        #                              edge_subst_cost=edge_substitution_price,
+        #                              edge_ins_cost=lambda _: NEW_SPLICING_VARIANT_PRICE,
+        #                              edge_del_cost=lambda _: NEW_SPLICING_VARIANT_PRICE,
+        #                              roots=(0, 0),
+        #                              timeout=10))
+        print(average_distance(at_structures.keys(), bra_structures.keys(), string_edit_distance_between_isoforms))
+#
+# visualize(closest_donor_distances, closest_acceptor_distances,
+#           coinciding_donors, coinciding_acceptors, coinciding_splice_sites)
