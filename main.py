@@ -57,6 +57,21 @@ def string_edit_distance_between_isoforms(first_string, second_string):
     return price
 
 
+def graph_edit_distance_between_isoforms(first_structure, second_structure):
+    length = first_structure[1][-1]  # because last coordinate of a donor is the biggest coordinate
+    first_graph = graph_from_splice_sites([first_structure], length)
+    second_graph = graph_from_splice_sites([second_structure], length)
+    return nx.graph_edit_distance(first_graph, second_graph,
+                                  node_subst_cost=node_substitution_price,
+                                  node_ins_cost=lambda _: NEW_SPLICE_SITE_PRICE,
+                                  node_del_cost=lambda _: NEW_SPLICE_SITE_PRICE,
+                                  edge_subst_cost=edge_substitution_price,
+                                  edge_ins_cost=lambda _: NEW_SPLICING_VARIANT_PRICE,
+                                  edge_del_cost=lambda _: NEW_SPLICING_VARIANT_PRICE,
+                                  roots=(0, 0),
+                                  timeout=10)
+
+
 def average_distance(first_structures, second_structures, distance_function):
     cumulative_price = 0
     number_of_pairs = 0
@@ -99,7 +114,10 @@ for filename in os.listdir(directory):
         #                              edge_del_cost=lambda _: NEW_SPLICING_VARIANT_PRICE,
         #                              roots=(0, 0),
         #                              timeout=10))
-        print(average_distance(at_structures.keys(), bra_structures.keys(), string_edit_distance_between_isoforms))
+        print(f"String edit distance "
+              f"{average_distance(at_structures.keys(), bra_structures.keys(), string_edit_distance_between_isoforms)}")
+        print(f"Graph edit distance "
+              f"{average_distance(at_structures.values(), bra_structures.values(), graph_edit_distance_between_isoforms)}")
 #
 # visualize(closest_donor_distances, closest_acceptor_distances,
 #           coinciding_donors, coinciding_acceptors, coinciding_splice_sites)
